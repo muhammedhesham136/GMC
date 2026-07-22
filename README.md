@@ -1,25 +1,31 @@
-# Muhammed Hesham — Portfolio
+# Muhammed Hesham — Portfolio & Demos
 
-My personal portfolio website: a single, hand-built `index.html` — no frameworks, no build step, no external requests.
+My personal portfolio website plus client-style demo sites I build to showcase my work. Hand-written HTML/CSS/JS — no frameworks, no build step.
 
-## Publish it with GitHub Pages (free)
+## Structure
+
+| Path | What it is |
+|---|---|
+| `index.html` | My developer portfolio (dark "midnight glass" design) |
+| `demos/dental-clinic/` | **Lumina Dental Studio** — fictional dental clinic demo: Three.js WebGL hero, crossfading background videos, before/after gallery, booking form |
+| `assets/` | Shared images (demo preview thumbnails) |
+
+Live site: `https://muhammedhesham136.github.io/GMC/` · demo: `https://muhammedhesham136.github.io/GMC/demos/dental-clinic/`
+
+## Publish with GitHub Pages
 
 1. Merge this branch into `main`.
-2. On GitHub, open **Settings → Pages**.
-3. Under **Build and deployment**, set Source to **Deploy from a branch**, pick `main` and `/ (root)`, then save.
-4. After a minute the site is live at `https://muhammedhesham136.github.io/GMC/`.
+2. **Settings → Pages** → Source: *Deploy from a branch* → `main` / `/ (root)` → Save.
+3. The site goes live at the URLs above within a minute of each merge.
 
-Tip: rename this repository to `muhammedhesham136.github.io` and the site will live at that cleaner root URL instead.
+## Add a new demo
 
-## Edit the content
+1. Create a folder `demos/<demo-name>/` with its own `index.html` (keep it self-contained).
+2. Add a preview screenshot to `assets/`.
+3. Copy the "featured card" block in `index.html` (search for `featured-card`) or a `project-card` block, and point it at the new demo folder.
 
-Everything lives in `index.html`. The text is plain HTML — search for the section you want:
+## Edit content
 
-- **Name / title / tagline** — in the `<!-- HERO -->` section.
-- **About paragraphs** — in the `<!-- ABOUT -->` section.
-- **Skills** — the `<li>` chips inside the `<!-- SKILLS -->` section.
-- **Projects** — each `<article class="project-card">` in `<!-- PROJECTS -->`. Copy one to add a new project. When a project has its own repo, add a link inside its `project-meta` block.
-- **Email / GitHub links** — search for `muhammedhesham1000@gmail.com` and `github.com/muhammedhesham136`.
-- **Colors** — the `:root { … }` variables at the top of the `<style>` block.
+Everything is plain HTML. In `index.html` search for the section you need: hero text, About paragraphs, `chips` (skills), `project-card` (projects), or your email/GitHub links. In the demo, all clinic copy lives in `demos/dental-clinic/index.html`.
 
-Open `index.html` in a browser to preview any change instantly — no tooling needed.
+Note: `demos/dental-clinic` is a fictional business — its branding, reviews, and contact details are invented for portfolio purposes, and the page says so in its footer.

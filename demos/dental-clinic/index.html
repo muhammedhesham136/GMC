@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumina Dental Studio — Modern Dentistry (Demo)</title>
+<meta name="description" content="Lumina Dental Studio — a fictional dental clinic website. Portfolio demo designed and built by Muhammed Hesham: Three.js WebGL hero, video transitions, interactive before/after gallery.">
+<meta property="og:title" content="Lumina Dental Studio — Modern Dentistry (Demo)">
+<meta property="og:description" content="A client-style dental clinic website demo: WebGL hero, video transitions, interactive smile gallery.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#04201f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2304201f'/%3E%3Cpath d='M32 14c-5 0-6.5 3.5-11 3.5-3.5 0-6 2.5-6 7 0 8 4 21.5 8.5 21.5 3.5 0 3-9 8.5-9s5 9 8.5 9C45 46 49 32.5 49 24.5c0-4.5-2.5-7-6-7-4.5 0-6-3.5-11-3.5z' fill='none' stroke='%236ee7d8' stroke-width='3.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+/* ==========================================================================
+   LUMINA DENTAL STUDIO — fictional clinic, portfolio demo
+   Built by Muhammed Hesham. One page, vendored Three.js, no other deps.
+   ========================================================================== */
+
+:root {
+  --hero-bg:   #04201f;
+  --ink:       #102724;
+  --body:      #3d5350;
+  --muted:     #64807b;
+  --paper:     #f6faf8;
+  --card:      #ffffff;
+  --line:      rgba(16, 60, 54, .12);
+  --teal:      #0f9b8a;
+  --teal-deep: #0b6e62;
+  --mint:      #6ee7d8;
+  --sand:      #e8c99b;
+  --hero-ink:  #eefaf7;
+  --hero-body: #b8d8d1;
+
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-sans:  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:  ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --container: min(1120px, 92vw);
+  --header-h: 4.5rem;
+  --radius: 20px;
+  --shadow: 0 24px 55px -28px rgba(9, 48, 43, .35);
+
+  --step-0: clamp(1rem, .95rem + .25vw, 1.1rem);
+  --step-1: clamp(1.2rem, 1.1rem + .5vw, 1.5rem);
+  --step-2: clamp(1.65rem, 1.4rem + 1.1vw, 2.3rem);
+  --step-3: clamp(2.5rem, 1.9rem + 3vw, 4.4rem);
+  --step--1: clamp(.83rem, .8rem + .15vw, .93rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { overflow-x: clip; scroll-padding-top: calc(var(--header-h) + 1rem); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+body {
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--body);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.7;
+}
+
+::selection { background: rgba(15, 155, 138, .25); }
+
+.container { width: var(--container); margin-inline: auto; }
+
+.skip-link {
+  position: fixed; top: .75rem; left: .75rem; z-index: 200;
+  padding: .7em 1.2em; border-radius: 999px;
+  background: var(--ink); color: #fff; font-weight: 600; text-decoration: none;
+  transform: translateY(-300%);
+}
+.skip-link:focus-visible { transform: none; }
+
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- Header ---------- */
+
+.site-header {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  height: var(--header-h);
+  color: var(--hero-ink);
+  transition: background-color .3s ease, color .3s ease, box-shadow .3s ease;
+}
+body.past-hero .site-header,
+body.nav-open .site-header {
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--ink);
+  box-shadow: 0 1px 0 var(--line), 0 12px 30px -22px rgba(9, 48, 43, .35);
+}
+.nav-bar { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+
+.brand {
+  display: inline-flex; align-items: center; gap: .6rem;
+  font-family: var(--font-serif); font-size: 1.25rem; letter-spacing: .01em;
+  color: inherit; text-decoration: none; font-weight: 700;
+}
+.brand svg { display: block; color: var(--mint); }
+body.past-hero .brand svg, body.nav-open .brand svg { color: var(--teal); }
+.brand .studio { font-family: var(--font-sans); font-size: .68rem; font-weight: 600; letter-spacing: .34em; text-transform: uppercase; opacity: .65; display: block; line-height: 1.1; }
+
+.nav-menu { display: flex; align-items: center; gap: .2rem; list-style: none; }
+.nav-link {
+  display: inline-block; padding: .5em .85em; border-radius: 999px;
+  font-size: var(--step--1); font-weight: 600; letter-spacing: .01em;
+  color: inherit; text-decoration: none; opacity: .82;
+  transition: opacity .2s ease, background-color .2s ease;
+}
+.nav-link:hover { opacity: 1; background: rgba(110, 231, 216, .12); }
+body.past-hero .nav-link:hover { background: rgba(15, 155, 138, .1); }
+
+.nav-cta {
+  margin-left: .5rem; padding: .6em 1.3em; border-radius: 999px;
+  background: var(--mint); color: #063733; font-size: var(--step--1); font-weight: 700;
+  text-decoration: none; transition: transform .2s ease, background-color .2s ease;
+}
+body.past-hero .nav-cta { background: var(--teal); color: #fff; }
+.nav-cta:hover { transform: translateY(-2px); }
+
+.nav-toggle {
+  display: none; position: relative; z-index: 130;
+  width: 2.8rem; height: 2.8rem; border-radius: 12px;
+  border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer;
+}
+.nav-toggle .bar {
+  position: absolute; left: 50%; top: 50%;
+  width: 1.15rem; height: 2px; border-radius: 2px; background: currentColor;
+  transition: transform .25s ease;
+}
+.nav-toggle .bar:nth-child(1) { transform: translate(-50%, calc(-50% - 4px)); }
+.nav-toggle .bar:nth-child(2) { transform: translate(-50%, calc(-50% + 4px)); }
+body.nav-open .nav-toggle .bar:nth-child(1) { transform: translate(-50%, -50%) rotate(45deg); }
+body.nav-open .nav-toggle .bar:nth-child(2) { transform: translate(-50%, -50%) rotate(-45deg); }
+
+@media (max-width: 860px) {
+  .nav-toggle { display: block; }
+  .nav-menu {
+    position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 120;
+    flex-direction: column; align-items: stretch; gap: .3rem;
+    padding: 1rem clamp(1rem, 4vw, 1.5rem) 1.3rem;
+    background: rgba(255, 255, 255, .96);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    color: var(--ink);
+    box-shadow: 0 30px 40px -30px rgba(9, 48, 43, .4);
+    transform: translateY(-.7rem); opacity: 0; visibility: hidden;
+    transition: transform .25s ease, opacity .25s ease, visibility .25s;
+  }
+  body.nav-open .nav-menu { transform: none; opacity: 1; visibility: visible; }
+  .nav-link { display: block; padding: .8em 1em; border-radius: 12px; font-size: var(--step-0); opacity: 1; }
+  .nav-cta { margin: .5rem 0 0; text-align: center; background: var(--teal); color: #fff; }
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  min-height: 100vh; min-height: 100svh;
+  display: flex; align-items: center;
+  padding: calc(var(--header-h) + 3rem) 0 7rem;
+  background: var(--hero-bg);
+  color: var(--hero-body);
+  overflow: hidden;
+}
+.hero-media, .hero-media video, #gl {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+.hero-media video {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 2.2s ease;
+}
+.hero-media video.is-showing { opacity: .5; }
+.hero-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(90% 90% at 20% 30%, rgba(4, 32, 31, .2), transparent 60%),
+    linear-gradient(180deg, rgba(4, 32, 31, .62), rgba(4, 32, 31, .32) 45%, rgba(4, 32, 31, .78));
+}
+#gl { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #gl { display: none; } }
+
+.hero-inner { position: relative; z-index: 2; }
+.hero-kicker {
+  display: inline-flex; align-items: center; gap: .7rem;
+  font-family: var(--font-mono); font-size: var(--step--1);
+  letter-spacing: .28em; text-transform: uppercase; color: var(--mint);
+  margin-bottom: 1.6rem;
+}
+.hero-kicker::before { content: ""; width: 2.2rem; height: 1px; background: var(--mint); opacity: .7; }
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.015em;
+  color: var(--hero-ink);
+  max-width: 13em;
+  margin-bottom: 1.3rem;
+  text-wrap: balance;
+}
+.hero h1 em { font-style: italic; color: var(--sand); }
+.hero-sub { max-width: 36em; margin-bottom: 2.4rem; font-size: var(--step-1); line-height: 1.6; text-wrap: pretty; }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: .9rem; margin-bottom: 3.2rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: .55em;
+  padding: .9em 1.8em; border-radius: 999px;
+  font-size: var(--step-0); font-weight: 700; text-decoration: none;
+  transition: transform .2s ease, box-shadow .25s ease, background-color .2s ease, border-color .2s ease;
+}
+.btn:active { transform: translateY(0); }
+.btn-solid { background: var(--mint); color: #063733; box-shadow: 0 14px 40px -12px rgba(110, 231, 216, .5); }
+.btn-solid:hover { transform: translateY(-2px); box-shadow: 0 18px 50px -12px rgba(110, 231, 216, .65); }
+.btn-line { border: 1px solid rgba(238, 250, 247, .35); color: var(--hero-ink); }
+.btn-line:hover { transform: translateY(-2px); border-color: var(--mint); }
+
+.hero-points { display: flex; flex-wrap: wrap; gap: .6rem 1.8rem; list-style: none; font-size: var(--step--1); }
+.hero-points li { display: inline-flex; align-items: center; gap: .55em; }
+.hero-points svg { color: var(--mint); flex: none; }
+
+.hero-wave {
+  position: absolute; left: 0; right: 0; bottom: -1px; z-index: 3;
+  display: block; width: 100%; height: clamp(3rem, 8vw, 6.5rem);
+}
+
+/* ---------- Shared section bits ---------- */
+
+.section { padding-block: clamp(4.5rem, 9vw, 7.5rem); }
+.section-alt { background: #eef6f3; }
+
+.section-head { max-width: 46em; margin-bottom: clamp(2.4rem, 5vw, 3.6rem); }
+.section-kicker {
+  font-family: var(--font-mono); font-size: var(--step--1);
+  letter-spacing: .26em; text-transform: uppercase; color: var(--teal);
+  display: block; margin-bottom: .8rem;
+}
+.section-title {
+  font-family: var(--font-serif); font-size: var(--step-2); font-weight: 700;
+  color: var(--ink); line-height: 1.15; letter-spacing: -.01em; text-wrap: balance;
+}
+.section-lede { margin-top: 1rem; max-width: 52ch; text-wrap: pretty; }
+
+/* ---------- About ---------- */
+
+.about-grid {
+  display: grid; grid-template-columns: 1.15fr .85fr;
+  gap: clamp(2rem, 5vw, 4rem); align-items: center;
+}
+.about-copy p { margin-bottom: 1.2em; max-width: 58ch; text-wrap: pretty; }
+.about-copy p:last-of-type { margin-bottom: 1.8em; }
+.about-copy strong { color: var(--ink); font-weight: 650; }
+
+.about-list { list-style: none; display: grid; gap: .9rem; }
+.about-list li { display: flex; gap: .85rem; align-items: flex-start; }
+.about-list svg { flex: none; margin-top: .3rem; color: var(--teal); }
+.about-list b { color: var(--ink); font-weight: 650; }
+
+.about-visual { position: relative; }
+.about-visual .frame {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  aspect-ratio: 4 / 4.6;
+  background: linear-gradient(160deg, #0b6e62, #12a390 55%, #67e8f9);
+  position: relative;
+}
+.about-visual .frame::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 45% at 70% 22%, rgba(255, 255, 255, .35), transparent 70%),
+    radial-gradient(70% 55% at 30% 85%, rgba(4, 32, 31, .4), transparent 70%);
+}
+.about-visual .tooth {
+  position: absolute; inset: 0; display: grid; place-items: center; z-index: 1;
+}
+.about-visual .badge {
+  position: absolute; z-index: 2;
+  background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+  padding: .9rem 1.2rem; font-size: var(--step--1); line-height: 1.45;
+}
+.about-visual .badge b { display: block; color: var(--ink); font-size: 1.05em; }
+.badge-1 { left: -1.4rem; bottom: 2.2rem; }
+.badge-2 { right: -1.2rem; top: 2rem; }
+
+/* ---------- Services ---------- */
+
+.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+.service-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.8rem 1.6rem;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.service-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(15, 155, 138, .35); }
+.service-icon {
+  width: 3rem; height: 3rem; border-radius: 14px;
+  display: grid; place-items: center; margin-bottom: 1.1rem;
+  background: linear-gradient(140deg, rgba(15, 155, 138, .12), rgba(110, 231, 216, .2));
+  color: var(--teal-deep);
+}
+.service-card h3 { font-family: var(--font-serif); font-size: var(--step-1); color: var(--ink); margin-bottom: .5rem; }
+.service-card p { font-size: var(--step--1); }
+
+@media (max-width: 980px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .services-grid { grid-template-columns: 1fr; max-width: 26rem; margin-inline: auto; } }
+
+/* ---------- Smile gallery (before / after) ---------- */
+
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+.case-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.case-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+
+.ba { position: relative; aspect-ratio: 4 / 3; overflow: hidden; user-select: none; }
+.ba img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; pointer-events: none;
+}
+.ba .before {
+  filter: saturate(.2) brightness(.62) contrast(.92);
+  clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0);
+}
+.ba .divider {
+  position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); z-index: 2;
+  width: 2px; background: rgba(255, 255, 255, .95);
+  transform: translateX(-1px);
+  pointer-events: none;
+  box-shadow: 0 0 14px rgba(0, 0, 0, .35);
+}
+.ba .divider::after {
+  content: "↔";
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2.4rem; height: 2.4rem; border-radius: 50%;
+  background: #fff; color: var(--ink);
+  display: grid; place-items: center;
+  font-size: 1rem; font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+}
+.ba input[type="range"] {
+  position: absolute; inset: 0; z-index: 3;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: ew-resize;
+  -webkit-appearance: none; appearance: none;
+}
+.ba .tag {
+  position: absolute; top: .8rem; z-index: 2;
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  color: #fff; background: rgba(4, 32, 31, .55);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  padding: .35em .8em; border-radius: 999px;
+  pointer-events: none;
+}
+.ba .tag-before { left: .8rem; }
+.ba .tag-after { right: .8rem; }
+
+.case-body { padding: 1.2rem 1.4rem 1.4rem; }
+.case-body h3 { font-family: var(--font-serif); font-size: var(--step-1); color: var(--ink); margin-bottom: .3rem; }
+.case-body p { font-size: var(--step--1); }
+
+.gallery-note {
+  margin-top: 1.8rem; text-align: center;
+  font-size: var(--step--1); color: var(--muted);
+}
+
+@media (max-width: 980px) { .gallery-grid { grid-template-columns: 1fr; max-width: 30rem; margin-inline: auto; } }
+
+/* ---------- Testimonials ---------- */
+
+.quotes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+.quote-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.8rem 1.6rem;
+  display: flex; flex-direction: column; gap: 1.1rem;
+}
+.quote-card .stars { color: var(--sand); letter-spacing: .2em; font-size: .95rem; }
+.quote-card blockquote { font-family: var(--font-serif); font-size: var(--step-1); line-height: 1.5; color: var(--ink); font-style: italic; text-wrap: pretty; }
+.quote-card figcaption { margin-top: auto; font-size: var(--step--1); color: var(--muted); }
+.quote-card figcaption b { color: var(--ink); }
+
+@media (max-width: 980px) { .quotes-grid { grid-template-columns: 1fr; max-width: 30rem; margin-inline: auto; } }
+
+/* ---------- Contact ---------- */
+
+.contact-wrap {
+  display: grid; grid-template-columns: .9fr 1.1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  background: var(--hero-bg);
+  border-radius: calc(var(--radius) + 8px);
+  color: var(--hero-body);
+  padding: clamp(2rem, 5vw, 3.5rem);
+  position: relative; overflow: hidden;
+}
+.contact-wrap::before {
+  content: "";
+  position: absolute; inset: -40% -20% auto auto; width: 34rem; height: 34rem;
+  background: radial-gradient(closest-side, rgba(110, 231, 216, .18), transparent 70%);
+  pointer-events: none;
+}
+.contact-info h2 { font-family: var(--font-serif); font-size: var(--step-2); color: var(--hero-ink); line-height: 1.15; margin-bottom: 1rem; text-wrap: balance; }
+.contact-info > p { margin-bottom: 2rem; max-width: 38ch; }
+.contact-lines { list-style: none; display: grid; gap: 1.1rem; font-size: var(--step--1); }
+.contact-lines li { display: flex; gap: .9rem; align-items: flex-start; }
+.contact-lines svg { flex: none; margin-top: .25rem; color: var(--mint); }
+.contact-lines b { display: block; color: var(--hero-ink); font-size: 1.02em; }
+
+.contact-form { position: relative; z-index: 1; display: grid; gap: 1rem; align-content: start; }
+.field label { display: block; font-size: var(--step--1); font-weight: 600; color: var(--hero-ink); margin-bottom: .4rem; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: .85em 1em;
+  border-radius: 12px;
+  border: 1px solid rgba(238, 250, 247, .22);
+  background: rgba(238, 250, 247, .06);
+  color: var(--hero-ink);
+  font: inherit; font-size: var(--step--1);
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.field select option { color: var(--ink); }
+.field input::placeholder, .field textarea::placeholder { color: rgba(184, 216, 209, .55); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--mint); background: rgba(238, 250, 247, .1);
+}
+.field textarea { min-height: 6.5rem; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.contact-form .btn-solid { justify-content: center; width: 100%; border: 0; cursor: pointer; font: inherit; font-weight: 700; }
+.form-note { font-size: .78rem; color: rgba(184, 216, 209, .7); text-align: center; }
+
+.form-success {
+  display: none;
+  padding: 2.5rem 1.5rem; text-align: center;
+  border: 1px dashed rgba(110, 231, 216, .5); border-radius: 16px;
+}
+.form-success svg { color: var(--mint); margin-bottom: 1rem; }
+.form-success h3 { font-family: var(--font-serif); color: var(--hero-ink); font-size: var(--step-1); margin-bottom: .4rem; }
+.contact-form.is-sent form { display: none; }
+.contact-form.is-sent .form-success { display: block; }
+
+@media (max-width: 900px) {
+  .contact-wrap { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer { padding: 2.5rem 0 2.8rem; }
+.footer-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 1rem; font-size: var(--step--1); color: var(--muted);
+}
+.footer-row a { color: var(--teal-deep); font-weight: 600; text-decoration: none; }
+.footer-row a:hover { text-decoration: underline; }
+.demo-note {
+  margin-top: .6rem; width: 100%;
+  font-size: .78rem; color: var(--muted);
+}
+
+/* ---------- Reveal ---------- */
+
+html.js .reveal {
+  opacity: 0;
+  translate: 0 22px;
+  transition: opacity .7s ease, translate .7s ease;
+  transition-delay: var(--d, 0ms);
+}
+html.js .reveal.is-in { opacity: 1; translate: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+  }
+  html { scroll-behavior: auto; }
+  html.js .reveal { opacity: 1; translate: none; }
+}
+
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .about-visual { width: 100%; max-width: 26rem; margin-inline: auto; }
+  .badge-1 { left: .8rem; }
+  .badge-2 { right: .8rem; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container nav-bar">
+    <a class="brand" href="#top" aria-label="Lumina Dental Studio — back to top">
+      <svg width="26" height="26" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M32 14c-5 0-6.5 3.5-11 3.5-3.5 0-6 2.5-6 7 0 8 4 21.5 8.5 21.5 3.5 0 3-9 8.5-9s5 9 8.5 9C45 46 49 32.5 49 24.5c0-4.5-2.5-7-6-7-4.5 0-6-3.5-11-3.5z" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
+      </svg>
+      <span>Lumina<span class="studio">Dental Studio</span></span>
+    </a>
+    <nav aria-label="Primary">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-menu" aria-label="Toggle navigation menu">
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+      </button>
+      <ul class="nav-menu" id="primary-menu">
+        <li><a class="nav-link" href="#about">About</a></li>
+        <li><a class="nav-link" href="#services">Services</a></li>
+        <li><a class="nav-link" href="#gallery">Smile Gallery</a></li>
+        <li><a class="nav-link" href="#reviews">Reviews</a></li>
+        <li><a class="nav-link" href="#contact">Contact</a></li>
+        <li><a class="nav-cta" href="#contact">Book now</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top" aria-label="Welcome">
+    <div class="hero-media" aria-hidden="true">
+      <video muted loop playsinline preload="metadata" src="media/hero-a.webm"></video>
+      <video muted loop playsinline preload="metadata" src="media/hero-b.webm"></video>
+    </div>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="hero-veil" aria-hidden="true"></div>
+
+    <div class="container hero-inner">
+      <p class="hero-kicker reveal">Modern dentistry, warmly done</p>
+      <h1 class="reveal" style="--d:90ms">Confidence begins<br>with a <em>smile</em>.</h1>
+      <p class="hero-sub reveal" style="--d:180ms">
+        At Lumina we blend gentle care with modern technology — so every visit
+        feels calm, and every smile leaves brighter than it arrived.
+      </p>
+      <div class="hero-actions reveal" style="--d:270ms">
+        <a class="btn btn-solid" href="#contact">Book a consultation</a>
+        <a class="btn btn-line" href="#gallery">See smile gallery</a>
+      </div>
+      <ul class="hero-points reveal" style="--d:360ms">
+        <li>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Cosmetic dentistry
+        </li>
+        <li>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Implants &amp; aligners
+        </li>
+        <li>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Anxiety-free visits
+        </li>
+      </ul>
+    </div>
+
+    <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,50 C240,95 480,10 720,35 C960,60 1200,80 1440,30 L1440,90 L0,90 Z" fill="#f6faf8"></path>
+    </svg>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section" id="about" aria-labelledby="about-title">
+    <div class="container about-grid">
+      <div class="about-copy">
+        <div class="section-head reveal" style="margin-bottom:1.6rem">
+          <span class="section-kicker">The studio</span>
+          <h2 class="section-title" id="about-title">Dentistry that feels like a day off</h2>
+        </div>
+        <div class="reveal" style="--d:100ms">
+          <p>
+            Lumina Dental Studio was designed around one belief: <strong>going to the
+            dentist shouldn't feel clinical</strong>. From the warm lighting to clear,
+            unhurried consultations, everything here is built to put you at ease.
+          </p>
+          <p>
+            Our team pairs that comfort with serious, modern equipment — digital
+            imaging, minimally invasive techniques, and treatment plans that are
+            explained in plain language, with <strong>transparent pricing before
+            anything begins</strong>.
+          </p>
+        </div>
+        <ul class="about-list reveal" style="--d:200ms">
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9A5.6 5.6 0 0 1 12 6.3 5.6 5.6 0 0 1 21.3 12c-2.3 4.4-9.3 9-9.3 9z"/></svg>
+            <span><b>Comfort-first care</b> — every step explained, nothing rushed</span>
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            <span><b>On-time visits</b> — your appointment starts when it should</span>
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3h5L16 7.5 12 21 8 7.5 9.5 3z"/></svg>
+            <span><b>Modern equipment</b> — digital scans instead of goopy molds</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="about-visual reveal" style="--d:150ms">
+        <div class="frame" role="img" aria-label="Stylized illustration of a bright tooth in soft teal light">
+          <div class="tooth">
+            <svg width="46%" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <path d="M32 10c-6.5 0-8.5 4.5-14.5 4.5-4.6 0-8 3.3-8 9.2 0 10.6 5.3 28.3 11.2 28.3 4.6 0 4-11.8 11.3-11.8s6.7 11.8 11.3 11.8C49.2 52 54.5 34.3 54.5 23.7c0-5.9-3.4-9.2-8-9.2C40.5 14.5 38.5 10 32 10z" fill="rgba(255,255,255,.92)"/>
+              <path d="M23 22c-1.8 1.4-3 3.6-3.2 6" stroke="rgba(15,155,138,.55)" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="badge badge-1">
+          <b>Gentle by design</b>
+          Calm rooms, clear pricing
+        </div>
+        <div class="badge badge-2">
+          <b>Digital-first</b>
+          3D scans &amp; imaging
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section section-alt" id="services" aria-labelledby="services-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-kicker">What we do</span>
+        <h2 class="section-title" id="services-title">Care for every kind of smile</h2>
+        <p class="section-lede">From routine check-ups to full smile makeovers — one studio, one familiar team.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4L12 3z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>
+          </span>
+          <h3>Teeth Whitening</h3>
+          <p>Professional in-studio whitening that lifts years of stains in a single relaxed session.</p>
+        </div>
+        <div class="service-card reveal" style="--d:70ms">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h16M12 4v16"/></svg>
+          </span>
+          <h3>Veneers</h3>
+          <p>Hand-finished porcelain veneers, matched to your face and designed tooth by tooth.</p>
+        </div>
+        <div class="service-card reveal" style="--d:140ms">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 9a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z"/><path d="M12 18v3"/></svg>
+          </span>
+          <h3>Dental Implants</h3>
+          <p>Permanent, natural-feeling replacements — planned digitally for a precise, gentle fit.</p>
+        </div>
+        <div class="service-card reveal" style="--d:210ms">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12c0-5 3-8 7-8s7 3 7 8-3 8-7 8-7-3-7-8z"/><path d="M8.5 12h7"/></svg>
+          </span>
+          <h3>Invisible Aligners</h3>
+          <p>Straighten discreetly with clear aligners and progress you can see scan by scan.</p>
+        </div>
+        <div class="service-card reveal" style="--d:280ms">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <h3>Check-ups &amp; Hygiene</h3>
+          <p>Thorough, judgement-free cleanings and exams that keep small things small.</p>
+        </div>
+        <div class="service-card reveal" style="--d:350ms">
+          <span class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14s1.3 1.5 3.5 1.5 3.5-1.5 3.5-1.5"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+          </span>
+          <h3>Kids' Dentistry</h3>
+          <p>First visits that end in high-fives — building lifelong healthy habits early.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GALLERY ============ -->
+  <section class="section" id="gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-kicker">Smile gallery</span>
+        <h2 class="section-title" id="gallery-title">Real transformations, side by side</h2>
+        <p class="section-lede">Drag the handle across each case to compare before and after.</p>
+      </div>
+      <div class="gallery-grid">
+
+        <article class="case-card reveal">
+          <div class="ba" style="--pos:50%">
+            <img class="after" src="media/case-1.jpg" alt="Case study one: smile makeover result" loading="lazy" width="1200" height="900">
+            <img class="before" src="media/case-1.jpg" alt="" aria-hidden="true" loading="lazy" width="1200" height="900">
+            <span class="divider" aria-hidden="true"></span>
+            <span class="tag tag-before">Before</span>
+            <span class="tag tag-after">After</span>
+            <input type="range" min="0" max="100" value="50" aria-label="Compare before and after: smile makeover">
+          </div>
+          <div class="case-body">
+            <h3>Smile Makeover</h3>
+            <p>Eight veneers and whitening, completed across three calm visits.</p>
+          </div>
+        </article>
+
+        <article class="case-card reveal" style="--d:100ms">
+          <div class="ba" style="--pos:50%">
+            <img class="after" src="media/case-2.jpg" alt="Case study two: teeth whitening result" loading="lazy" width="1200" height="900">
+            <img class="before" src="media/case-2.jpg" alt="" aria-hidden="true" loading="lazy" width="1200" height="900">
+            <span class="divider" aria-hidden="true"></span>
+            <span class="tag tag-before">Before</span>
+            <span class="tag tag-after">After</span>
+            <input type="range" min="0" max="100" value="50" aria-label="Compare before and after: teeth whitening">
+          </div>
+          <div class="case-body">
+            <h3>Teeth Whitening</h3>
+            <p>A single in-studio session — five shades brighter, zero sensitivity.</p>
+          </div>
+        </article>
+
+        <article class="case-card reveal" style="--d:200ms">
+          <div class="ba" style="--pos:50%">
+            <img class="after" src="media/case-3.jpg" alt="Case study three: invisible aligners result" loading="lazy" width="1200" height="900">
+            <img class="before" src="media/case-3.jpg" alt="" aria-hidden="true" loading="lazy" width="1200" height="900">
+            <span class="divider" aria-hidden="true"></span>
+            <span class="tag tag-before">Before</span>
+            <span class="tag tag-after">After</span>
+            <input type="range" min="0" max="100" value="50" aria-label="Compare before and after: invisible aligners">
+          </div>
+          <div class="case-body">
+            <h3>Invisible Aligners</h3>
+            <p>Fourteen months of clear aligners, tracked with monthly 3D scans.</p>
+          </div>
+        </article>
+
+      </div>
+      <p class="gallery-note">Illustrative imagery — in a live clinic site, this gallery holds real patient cases (with consent).</p>
+    </div>
+  </section>
+
+  <!-- ============ REVIEWS ============ -->
+  <section class="section section-alt" id="reviews" aria-labelledby="reviews-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-kicker">Kind words</span>
+        <h2 class="section-title" id="reviews-title">What patients say</h2>
+      </div>
+      <div class="quotes-grid">
+        <figure class="quote-card reveal">
+          <p class="stars" aria-label="Five star rating">★★★★★</p>
+          <blockquote>“I used to dread the dentist. Now I book cleanings the way I book a haircut — no stress at all.”</blockquote>
+          <figcaption><b>Sarah M.</b> — whitening &amp; hygiene</figcaption>
+        </figure>
+        <figure class="quote-card reveal" style="--d:100ms">
+          <p class="stars" aria-label="Five star rating">★★★★★</p>
+          <blockquote>“They walked me through every option and every price before we started. That honesty won me over.”</blockquote>
+          <figcaption><b>Omar K.</b> — dental implant</figcaption>
+        </figure>
+        <figure class="quote-card reveal" style="--d:200ms">
+          <p class="stars" aria-label="Five star rating">★★★★★</p>
+          <blockquote>“My aligner journey took 14 months and I smiled through all of it — literally.”</blockquote>
+          <figcaption><b>Layla A.</b> — invisible aligners</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section" id="contact" aria-labelledby="contact-title">
+    <div class="container">
+      <div class="contact-wrap reveal">
+        <div class="contact-info">
+          <h2 id="contact-title">Book your visit</h2>
+          <p>Tell us what you need and we'll call you back within one working day to find a time that suits you.</p>
+          <ul class="contact-lines">
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.6 3a2 2 0 0 1-.5 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.5l3 .6a2 2 0 0 1 1.7 2z"/></svg>
+              <span><b>Call or WhatsApp</b> +20 100 000 0000</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span><b>Visit the studio</b> 14 Nile View Street, Cairo</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              <span><b>Open six days</b> Sat–Thu, 10:00 – 20:00</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="contact-form">
+          <form novalidate>
+            <div class="form-row">
+              <p class="field">
+                <label for="f-name">Your name</label>
+                <input id="f-name" name="name" type="text" placeholder="Full name" autocomplete="name" required>
+              </p>
+              <p class="field">
+                <label for="f-phone">Phone</label>
+                <input id="f-phone" name="phone" type="tel" placeholder="+20 …" autocomplete="tel" required>
+              </p>
+            </div>
+            <p class="field">
+              <label for="f-service">What do you need?</label>
+              <select id="f-service" name="service">
+                <option>General check-up</option>
+                <option>Teeth whitening</option>
+                <option>Veneers</option>
+                <option>Dental implants</option>
+                <option>Invisible aligners</option>
+                <option>Something else</option>
+              </select>
+            </p>
+            <p class="field">
+              <label for="f-msg">Anything we should know? <span style="opacity:.6;font-weight:400">(optional)</span></label>
+              <textarea id="f-msg" name="message" placeholder="Tell us a little about your smile goals…"></textarea>
+            </p>
+            <button class="btn btn-solid" type="submit">Request a callback</button>
+            <p class="form-note">Demo form — no data is sent anywhere.</p>
+          </form>
+          <div class="form-success" role="status">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.6 2.6L16 9.5"/></svg>
+            <h3>Request received!</h3>
+            <p>We'll call you back within one working day.<br>(This is a demo — nothing was actually sent.)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-row">
+    <p>© 2026 Lumina Dental Studio</p>
+    <p>Designed &amp; built by <a href="../../" rel="author">Muhammed Hesham</a> · <a href="https://github.com/muhammedhesham136" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+    <p class="demo-note">Lumina Dental Studio is a fictional clinic. This page is a client-style portfolio demo — the branding, patients, and contact details are invented.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var doc = document;
+  doc.documentElement.classList.add('js');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --- Header theme swap once the hero is scrolled past --- */
+  var hero = doc.querySelector('.hero');
+  if ('IntersectionObserver' in window && hero) {
+    var heroWatch = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        doc.body.classList.toggle('past-hero', !entry.isIntersecting);
+      });
+    }, { rootMargin: '-72px 0px 0px 0px', threshold: 0 });
+    heroWatch.observe(hero);
+  }
+
+  /* --- Mobile nav --- */
+  var toggle = doc.querySelector('.nav-toggle');
+  var menu = doc.getElementById('primary-menu');
+  function closeMenu() {
+    doc.body.classList.remove('nav-open');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  }
+  if (toggle && menu) {
+    toggle.addEventListener('click', function () {
+      var open = doc.body.classList.toggle('nav-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    menu.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('a')) closeMenu();
+    });
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && doc.body.classList.contains('nav-open')) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+    doc.addEventListener('click', function (e) {
+      if (doc.body.classList.contains('nav-open') &&
+          e.target && e.target.closest && !e.target.closest('.site-header')) {
+        closeMenu();
+      }
+    });
+    var wideNav = window.matchMedia('(min-width: 861px)');
+    var onNavBreakpoint = function (e) { if (e.matches) closeMenu(); };
+    if (wideNav.addEventListener) wideNav.addEventListener('change', onNavBreakpoint);
+    else wideNav.addListener(onNavBreakpoint);
+  }
+
+  /* --- Hero video crossfade --- */
+  var vids = Array.prototype.slice.call(doc.querySelectorAll('.hero-media video'));
+  if (vids.length && !reduceMotion) {
+    var current = 0;
+    vids.forEach(function (v) {
+      v.play().catch(function () { /* autoplay blocked: gradient + WebGL still carry the hero */ });
+    });
+    vids[0].classList.add('is-showing');
+    if (vids.length > 1) {
+      setInterval(function () {
+        vids[current].classList.remove('is-showing');
+        current = (current + 1) % vids.length;
+        vids[current].classList.add('is-showing');
+      }, 9000);
+    }
+  }
+
+  /* --- Reveal on scroll --- */
+  var revealEls = Array.prototype.slice.call(doc.querySelectorAll('.reveal'));
+  function finishReveal(el) {
+    el.classList.remove('reveal', 'is-in');
+    el.style.removeProperty('--d');
+  }
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        el.classList.add('is-in');
+        revealObserver.unobserve(el);
+        var done = false;
+        var finish = function () { if (!done) { done = true; finishReveal(el); } };
+        el.addEventListener('transitionend', function handler(e) {
+          if (e.target === el && e.propertyName === 'opacity') {
+            el.removeEventListener('transitionend', handler);
+            finish();
+          }
+        });
+        setTimeout(finish, 1400);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    revealEls.forEach(function (el) { revealObserver.observe(el); });
+  } else {
+    revealEls.forEach(finishReveal);
+  }
+
+  /* --- Before / after sliders --- */
+  Array.prototype.forEach.call(doc.querySelectorAll('.ba'), function (ba) {
+    var range = ba.querySelector('input[type="range"]');
+    if (!range) return;
+    var update = function () { ba.style.setProperty('--pos', range.value + '%'); };
+    range.addEventListener('input', update);
+    update();
+  });
+
+  /* --- Demo booking form --- */
+  var formWrap = doc.querySelector('.contact-form');
+  var form = formWrap && formWrap.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      formWrap.classList.add('is-sent');
+    });
+  }
+})();
+</script>
+
+<script type="module">
+/* --- Three.js hero: drifting particle wave with pointer parallax --- */
+import * as THREE from './js/three.module.min.js';
+
+const canvas = document.getElementById('gl');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (canvas && !reduceMotion) {
+  try {
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: 'low-power',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x04201f, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 80);
+    camera.position.set(0, 2.4, 15);
+
+    // soft round sprite for each particle
+    const spriteCanvas = document.createElement('canvas');
+    spriteCanvas.width = spriteCanvas.height = 64;
+    const sctx = spriteCanvas.getContext('2d');
+    const grad = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.35, 'rgba(255,255,255,.55)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    sctx.fillStyle = grad;
+    sctx.fillRect(0, 0, 64, 64);
+    const sprite = new THREE.CanvasTexture(spriteCanvas);
+
+    const COLS = 90, ROWS = 26;
+    const COUNT = COLS * ROWS;
+    const positions = new Float32Array(COUNT * 3);
+    const colors = new Float32Array(COUNT * 3);
+    const palette = [
+      new THREE.Color(0x9ff5e8),
+      new THREE.Color(0x67e8f9),
+      new THREE.Color(0xffffff),
+      new THREE.Color(0xe8c99b),
+    ];
+    let i3 = 0;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        positions[i3]     = (c / (COLS - 1) - 0.5) * 46;   // x
+        positions[i3 + 1] = 0;                              // y (animated)
+        positions[i3 + 2] = (r / (ROWS - 1) - 0.5) * 16;   // z
+        const col = palette[(r * COLS + c) % 7 === 0 ? 3 : (c + r) % 3];
+        colors[i3] = col.r; colors[i3 + 1] = col.g; colors[i3 + 2] = col.b;
+        i3 += 3;
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.34,
+      map: sprite,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.75,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const points = new THREE.Points(geo, mat);
+    points.position.y = -2.2;
+    scene.add(points);
+
+    // pointer parallax
+    let targetX = 0, targetY = 0;
+    window.addEventListener('pointermove', (e) => {
+      targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+
+    function resize() {
+      const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+      const h = canvas.clientHeight || canvas.parentElement.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // pause when the hero is off-screen or the tab is hidden
+    let heroVisible = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        heroVisible = entries[0].isIntersecting;
+      }).observe(canvas);
+    }
+
+    const pos = geo.attributes.position;
+    const start = performance.now();
+    function tick() {
+      requestAnimationFrame(tick);
+      if (!heroVisible || document.hidden) return;
+      const t = (performance.now() - start) / 1000;
+      let idx = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const x = pos.array[idx];
+          const z = pos.array[idx + 2];
+          pos.array[idx + 1] =
+            Math.sin(x * 0.32 + t * 0.55) * 0.85 +
+            Math.cos(z * 0.55 + t * 0.38) * 0.55;
+          idx += 3;
+        }
+      }
+      pos.needsUpdate = true;
+      points.rotation.y = Math.sin(t * 0.05) * 0.04;
+      camera.position.x += (targetX * 1.4 - camera.position.x) * 0.03;
+      camera.position.y += (2.4 - targetY * 0.9 - camera.position.y) * 0.03;
+      camera.lookAt(0, -0.5, 0);
+      renderer.render(scene, camera);
+    }
+    tick();
+  } catch (err) {
+    canvas.remove(); // no WebGL: videos + gradient veil still carry the hero
+  }
+}
+</script>
+
+</body>
+</html>
